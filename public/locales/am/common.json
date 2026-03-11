@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "መነሻ",
+    "services": "አገልግሎቶች",
+    "contact": "ያግኙን",
+    "dashboard": "ዳሽቦርድ",
+    "order": "አሁን ይዘዙ",
+    "signIn": "ግባ",
+    "signOut": "ውጣ"
+  },
+  "hero": {
+    "title": "በኢትዮጵያ ውስጥ ፕሪሚየም ኤልኢዲ ስክሪን ኪራይ እና መጫን",
+    "subtitle": "ክስተቶችዎን በከፍተኛ ጥራት ኤልኢዲ ማሳያዎች ይለውጡ። ከኮንፈረንስ እስከ ኮንሰርቶች፣ አስደናቂ የእይታ ልምዶችን እናቀርባለን።",
+    "viewServices": "አገልግሎቶችን ይመልከቱ",
+    "getStarted": "ይጀምሩ"
+  },
+  "services": {
+    "title": "የኤልኢዲ ስክሪን አይነቶች",
+    "indoor": "የቤት ውስጥ",
+    "outdoor": "የውጭ",
+    "pricePerDay": "በቀን ዋጋ",
+    "specifications": "ዝርዝሮች",
+    "orderNow": "አሁን ይዘዙ",
+    "calculatePrice": "ዋጋ አስሉ"
+  },
+  "order": {
+    "title": "ትዕዛዝዎን ያስገቡ",
+    "ledType": "የኤልኢዲ አይነት",
+    "squareMeters": "ካሬ ሜትር",
+    "programType": "የፕሮግራም አይነት",
+    "eventDate": "የክስተት ቀን",
+    "duration": "ቆይታ (ቀናት)",
+    "location": "ቦታ",
+    "venue": "የቦታ ስም",
+    "city": "ከተማ",
+    "address": "አድራሻ",
+    "specialInstructions": "ልዩ መመሪያዎች",
+    "totalPrice": "ጠቅላላ ዋጋ",
+    "submit": "ትዕዛዝ ያስገቡ",
+    "success": "ትዕዛዝ በተሳካ ሁኔታ ገብቷል!",
+    "error": "ትዕዛዝ ማስገባት አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+  },
+  "dashboard": {
+    "welcome": "እንኳን ደህና መጡ",
+    "myOrders": "ትዕዛዞቼ",
+    "orderHistory": "የትዕዛዝ ታሪክ",
+    "orderNumber": "የትዕዛዝ ቁጥር",
+    "status": "ሁኔታ",
+    "date": "ቀን",
+    "total": "ጠቅላላ",
+    "viewDetails": "ዝርዝሮችን ይመልከቱ",
+    "trackOrder": "ትዕዛዝ ይከታተሉ",
+    "noOrders": "ምንም ትዕዛዞች አልተገኙም"
+  },
+  "contact": {
+    "title": "ያግኙን",
+    "subtitle": "ለማንኛውም ጥያቄ ወይም እርዳታ ያግኙን",
+    "name": "ስምዎ",
+    "email": "ኢሜይል አድራሻ",
+    "phone": "ስልክ ቁጥር",
+    "subject": "ርዕስ",
+    "message": "መልእክት",
+    "send": "መልእክት ይላኩ",
+    "success": "መልእክት በተሳካ ሁኔታ ተልኳል!",
+    "error": "መልእክት መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+  },
+  "footer": {
+    "about": "ስለ እኛ",
+    "quickLinks": "ፈጣን አገናኞች",
+    "services": "አገልግሎቶቻችን",
+    "contactInfo": "የመገኛያ መረጃ",
+    "rights": "መብቱ በህግ የተጠበቀ ነው"
+  }
+}

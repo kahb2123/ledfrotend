@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "order": "Order Now",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "hero": {
+    "title": "Premium LED Screen Rental & Installation in Ethiopia",
+    "subtitle": "Transform your events with crystal-clear LED displays. From conferences to concerts, we deliver stunning visual experiences.",
+    "viewServices": "View Services",
+    "getStarted": "Get Started"
+  },
+  "services": {
+    "title": "Our LED Screen Types",
+    "indoor": "Indoor",
+    "outdoor": "Outdoor",
+    "pricePerDay": "Price per day",
+    "specifications": "Specifications",
+    "orderNow": "Order Now",
+    "calculatePrice": "Calculate Price"
+  },
+  "order": {
+    "title": "Place Your Order",
+    "ledType": "LED Type",
+    "squareMeters": "Square Meters",
+    "programType": "Program Type",
+    "eventDate": "Event Date",
+    "duration": "Duration (Days)",
+    "location": "Location",
+    "venue": "Venue Name",
+    "city": "City",
+    "address": "Address",
+    "specialInstructions": "Special Instructions",
+    "totalPrice": "Total Price",
+    "submit": "Submit Order",
+    "success": "Order placed successfully!",
+    "error": "Failed to place order. Please try again."
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "myOrders": "My Orders",
+    "orderHistory": "Order History",
+    "orderNumber": "Order Number",
+    "status": "Status",
+    "date": "Date",
+    "total": "Total",
+    "viewDetails": "View Details",
+    "trackOrder": "Track Order",
+    "noOrders": "No orders found"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with us for any inquiries or assistance",
+    "name": "Your Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send Message",
+    "success": "Message sent successfully!",
+    "error": "Failed to send message. Please try again."
+  },
+  "footer": {
+    "about": "About Us",
+    "quickLinks": "Quick Links",
+    "services": "Our Services",
+    "contactInfo": "Contact Info",
+    "rights": "All rights reserved"
+  }
+}
