@@ -6,25 +6,70 @@ import {
   FaTv, FaTools, FaClock, FaUsers, FaAward, 
   FaPlay, FaChevronRight, FaStar, FaQuoteRight, 
   FaCalendar, FaMapMarkerAlt, FaArrowRight, FaCheck, 
-  FaPhone, FaEnvelope, FaRocket, FaShieldAlt, FaHeadset
+  FaPhone, FaEnvelope
 } from 'react-icons/fa'
 import styles from './HomePage.module.css'
 import VideoBackground from '../components/common/VideoBackground'
-import video1 from '../assets/videos/led-showcase-1.mp4'
-import video2 from '../assets/videos/led-showcase-2.mp4'
-import video3 from '../assets/videos/led-showcase-3.mp4'
+import api from '../services/api'
 
 const HomePage = () => {
   const { t } = useTranslation()
   const { isSignedIn } = useUser()
   const [activeTestimonial, setActiveTestimonial] = useState(0)
-   const videos = [video1, video2, video3]
+  const [ledScreens, setLedScreens] = useState([])
+  const [installations, setInstallations] = useState([])
+  const [loadingScreens, setLoadingScreens] = useState(true)
+  const [loadingInstallations, setLoadingInstallations] = useState(true)
 
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveTestimonial((prev) => (prev + 1) % testimonials.length)
     }, 6000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Fetch LED screens from backend (Services API)
+  useEffect(() => {
+    const fetchLedScreens = async () => {
+      try {
+        setLoadingScreens(true)
+        const data = await api.getServices()
+        if (Array.isArray(data)) {
+          setLedScreens(data)
+        } else if (data?.services && Array.isArray(data.services)) {
+          setLedScreens(data.services)
+        } else {
+          setLedScreens([])
+        }
+      } catch {
+        setLedScreens([])
+      } finally {
+        setLoadingScreens(false)
+      }
+    }
+    fetchLedScreens()
+  }, [])
+
+  // Fetch recent installations from backend (Media API)
+  useEffect(() => {
+    const fetchInstallations = async () => {
+      try {
+        setLoadingInstallations(true)
+        const data = await api.getMedia({ category: 'installation', isPublic: 'true' })
+        if (data?.media && Array.isArray(data.media)) {
+          setInstallations(data.media)
+        } else if (Array.isArray(data)) {
+          setInstallations(data)
+        } else {
+          setInstallations([])
+        }
+      } catch {
+        setInstallations([])
+      } finally {
+        setLoadingInstallations(false)
+      }
+    }
+    fetchInstallations()
   }, [])
 
   const services = [
@@ -58,83 +103,77 @@ const HomePage = () => {
     }
   ]
 
-  const popularLEDs = [
+  // Fallback data when no LED screens in the database yet
+  const fallbackLEDs = [
     {
       type: 'P3',
-      category: 'Indoor',
-      resolution: '1280x720',
-      brightness: '1500 nits',
-      price: '2,500 ETB/m²/day',
-      image: 'https://images.unsplash.com/photo-1580894901296-2b8f2a4e6282?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
-      features: ['HD Quality', 'Energy Efficient', 'Light Weight'],
-      popular: true
+      category: 'indoor',
+      specifications: { brightness: '1500 nits', resolution: '1280x720' },
+      pricePerDay: 2500,
+      features: [{ en: 'HD Quality' }, { en: 'Energy Efficient' }, { en: 'Light Weight' }],
+      images: [{ url: 'https://images.unsplash.com/photo-1580894901296-2b8f2a4e6282?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80' }],
+      isAvailable: true
     },
     {
       type: 'P4',
-      category: 'Indoor',
-      resolution: '960x540',
-      brightness: '1800 nits',
-      price: '2,000 ETB/m²/day',
-      image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80',
-      features: ['Cost Effective', 'Easy Setup', 'Versatile'],
-      popular: false
+      category: 'indoor',
+      specifications: { brightness: '1800 nits', resolution: '960x540' },
+      pricePerDay: 2000,
+      features: [{ en: 'Cost Effective' }, { en: 'Easy Setup' }, { en: 'Versatile' }],
+      images: [{ url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80' }],
+      isAvailable: true
     },
     {
       type: 'P5',
-      category: 'Outdoor',
-      resolution: '768x432',
-      brightness: '5500 nits',
-      price: '3,500 ETB/m²/day',
-      image: 'https://images.unsplash.com/photo-1545156521-77bd85671d30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
-      features: ['Weatherproof', 'Daylight Visible', 'Durable'],
-      popular: true
+      category: 'outdoor',
+      specifications: { brightness: '5500 nits', resolution: '768x432' },
+      pricePerDay: 3500,
+      features: [{ en: 'Weatherproof' }, { en: 'Daylight Visible' }, { en: 'Durable' }],
+      images: [{ url: 'https://images.unsplash.com/photo-1545156521-77bd85671d30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80' }],
+      isAvailable: true
     },
     {
       type: 'P10',
-      category: 'Outdoor',
-      resolution: '384x216',
-      brightness: '6500 nits',
-      price: '2,800 ETB/m²/day',
-      image: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
-      features: ['Large Format', 'High Impact', 'Cost Efficient'],
-      popular: false
+      category: 'outdoor',
+      specifications: { brightness: '6500 nits', resolution: '384x216' },
+      pricePerDay: 2800,
+      features: [{ en: 'Large Format' }, { en: 'High Impact' }, { en: 'Cost Efficient' }],
+      images: [{ url: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80' }],
+      isAvailable: true
     }
   ]
 
-  const recentInstallations = [
+  // Fallback installations when none in the database yet
+  const fallbackInstallations = [
     {
-      title: 'Millennium Hall Conference',
-      location: 'Addis Ababa',
-      date: 'Feb 2024',
-      image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&auto=format&fit=crop&w=1112&q=80',
-      type: 'P3 Indoor',
-      size: '25 m²'
+      title: { en: 'Millennium Hall Conference' },
+      url: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&auto=format&fit=crop&w=1112&q=80',
+      description: { en: 'Addis Ababa' },
+      createdAt: '2024-02-15'
     },
     {
-      title: 'Ethio Telecom Expo',
-      location: 'Addis Ababa',
-      date: 'Jan 2024',
-      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
-      type: 'P5 Outdoor',
-      size: '40 m²'
+      title: { en: 'Ethio Telecom Expo' },
+      url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
+      description: { en: 'Addis Ababa' },
+      createdAt: '2024-01-10'
     },
     {
-      title: 'Wedding Reception',
-      location: 'Skylight Hotel',
-      date: 'Mar 2024',
-      image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=1169&q=80',
-      type: 'P2 Indoor',
-      size: '15 m²'
+      title: { en: 'Wedding Reception' },
+      url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=1169&q=80',
+      description: { en: 'Skylight Hotel' },
+      createdAt: '2024-03-20'
     },
     {
-      title: 'New Year Concert',
-      location: 'Meskel Square',
-      date: 'Dec 2023',
-      image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
-      type: 'P10 Outdoor',
-      size: '100 m²'
+      title: { en: 'New Year Concert' },
+      url: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
+      description: { en: 'Meskel Square' },
+      createdAt: '2023-12-25'
     }
   ]
+
+  // Use real data if available, fallback otherwise
+  const displayLEDs = ledScreens.length > 0 ? ledScreens : fallbackLEDs
+  const displayInstallations = installations.length > 0 ? installations : fallbackInstallations
 
   const testimonials = [
     {
@@ -170,6 +209,43 @@ const HomePage = () => {
     { number: '24/7', label: 'Support Available', icon: <FaClock /> }
   ]
 
+  // Helper to get LED image URL
+  const getLedImage = (led) => {
+    if (led.images && led.images.length > 0) {
+      const primary = led.images.find(img => img.isPrimary)
+      return primary ? primary.url : led.images[0].url
+    }
+    const defaults = {
+      P2: 'https://images.unsplash.com/photo-1580894901296-2b8f2a4e6282?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
+      P3: 'https://images.unsplash.com/photo-1580894901296-2b8f2a4e6282?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
+      P4: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80',
+      P5: 'https://images.unsplash.com/photo-1545156521-77bd85671d30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80',
+      P10: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80'
+    }
+    return defaults[led.type] || defaults.P3
+  }
+
+  // Helper to get metadata from installation
+  const getMetadata = (item, key) => {
+    if (item.metadata instanceof Map) {
+      return item.metadata.get(key) || ''
+    }
+    if (item.metadata && typeof item.metadata === 'object') {
+      return item.metadata[key] || ''
+    }
+    return ''
+  }
+
+  // Helper to format date for installations
+  const formatInstallationDate = (dateStr) => {
+    if (!dateStr) return ''
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    } catch {
+      return ''
+    }
+  }
+
   return (
     <div className={styles.homePage}>
       <section className={styles.hero}>
@@ -200,7 +276,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* What We Offer Section - Rich Sapphire */}
+      {/* What We Offer Section */}
       <section className={styles.whatWeOffer}>
         <div className="container">
           <div className={styles.sectionHeader}>
@@ -235,7 +311,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Most Popular LEDs Section - Midnight Teal */}
+      {/* Most Popular LEDs Section - fetched from backend */}
       <section className={styles.popularLEDs}>
         <div className="container">
           <div className={styles.sectionHeader}>
@@ -246,47 +322,55 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className={styles.ledGrid}>
-            {popularLEDs.map((led, index) => (
-              <div key={index} className={`${styles.ledCard} ${led.popular ? styles.popular : ''}`}>
-                {led.popular && <span className={styles.popularBadge}>Most Popular</span>}
-                <div className={styles.ledImage}>
-                  <img src={led.image} alt={`${led.type} LED Screen`} />
-                  <div className={styles.ledOverlay}>
-                    <span className={styles.ledCategory}>{led.category}</span>
-                  </div>
-                </div>
-                <div className={styles.ledInfo}>
-                  <h3 className={styles.ledType}>{led.type}</h3>
-                  <div className={styles.ledSpecs}>
-                    <div className={styles.spec}>
-                      <span>Resolution</span>
-                      <strong>{led.resolution}</strong>
-                    </div>
-                    <div className={styles.spec}>
-                      <span>Brightness</span>
-                      <strong>{led.brightness}</strong>
+          {loadingScreens ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#fff' }}>Loading LED screens...</div>
+          ) : (
+            <div className={styles.ledGrid}>
+              {displayLEDs.map((led, index) => (
+                <div key={led._id || index} className={`${styles.ledCard} ${index === 0 || index === 2 ? styles.popular : ''}`}>
+                  {(index === 0 || index === 2) && <span className={styles.popularBadge}>Most Popular</span>}
+                  <div className={styles.ledImage}>
+                    <img src={getLedImage(led)} alt={`${led.type} LED Screen`} />
+                    <div className={styles.ledOverlay}>
+                      <span className={styles.ledCategory}>
+                        {led.category ? led.category.charAt(0).toUpperCase() + led.category.slice(1) : 'Indoor'}
+                      </span>
                     </div>
                   </div>
-                  <ul className={styles.ledFeatures}>
-                    {led.features.map((feature, idx) => (
-                      <li key={idx}>{feature}</li>
-                    ))}
-                  </ul>
-                  <div className={styles.ledPrice}>
-                    <span className={styles.price}>{led.price}</span>
-                    <Link to="/order" className={styles.orderBtn}>
-                      Order Now
-                    </Link>
+                  <div className={styles.ledInfo}>
+                    <h3 className={styles.ledType}>{led.type}</h3>
+                    <div className={styles.ledSpecs}>
+                      <div className={styles.spec}>
+                        <span>Resolution</span>
+                        <strong>{led.specifications?.resolution || 'N/A'}</strong>
+                      </div>
+                      <div className={styles.spec}>
+                        <span>Brightness</span>
+                        <strong>{led.specifications?.brightness || 'N/A'}</strong>
+                      </div>
+                    </div>
+                    <ul className={styles.ledFeatures}>
+                      {(led.features || []).slice(0, 3).map((feature, idx) => (
+                        <li key={idx}>{typeof feature === 'string' ? feature : (feature?.en || feature?.am || '')}</li>
+                      ))}
+                    </ul>
+                    <div className={styles.ledPrice}>
+                      <span className={styles.price}>
+                        {led.pricePerDay ? `${led.pricePerDay.toLocaleString()} ETB/m\u00B2/day` : 'Contact for price'}
+                      </span>
+                      <Link to="/order" className={styles.orderBtn}>
+                        Order Now
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Recent Installations Section - Dark Royal */}
+      {/* Recent Installations Section - fetched from backend */}
       <section className={styles.recentInstallations}>
         <div className="container">
           <div className={styles.sectionHeader}>
@@ -297,26 +381,30 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className={styles.installationGrid}>
-            {recentInstallations.map((installation, index) => (
-              <div key={index} className={styles.installationCard}>
-                <div className={styles.installationImage}>
-                  <img src={installation.image} alt={installation.title} />
-                  <div className={styles.installationOverlay}>
-                    <div className={styles.installationDetails}>
-                      <h4>{installation.title}</h4>
-                      <p><FaMapMarkerAlt /> {installation.location}</p>
-                      <p><FaCalendar /> {installation.date}</p>
-                      <div className={styles.installationSpecs}>
-                        <span>{installation.type}</span>
-                        <span>{installation.size}</span>
+          {loadingInstallations ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#fff' }}>Loading installations...</div>
+          ) : (
+            <div className={styles.installationGrid}>
+              {displayInstallations.map((installation, index) => (
+                <div key={installation._id || index} className={styles.installationCard}>
+                  <div className={styles.installationImage}>
+                    <img src={installation.url} alt={typeof installation.title === 'string' ? installation.title : (installation.title?.en || 'Installation')} />
+                    <div className={styles.installationOverlay}>
+                      <div className={styles.installationDetails}>
+                        <h4>{typeof installation.title === 'string' ? installation.title : (installation.title?.en || 'LED Installation')}</h4>
+                        <p><FaMapMarkerAlt /> {getMetadata(installation, 'location') || installation.description?.en || ''}</p>
+                        <p><FaCalendar /> {formatInstallationDate(installation.createdAt)}</p>
+                        <div className={styles.installationSpecs}>
+                          <span>{getMetadata(installation, 'ledType') || ''}</span>
+                          <span>{getMetadata(installation, 'size') || ''}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className={styles.viewMore}>
             <Link to="/gallery" className={styles.viewMoreBtn}>
@@ -326,7 +414,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Stats Section - Purple Navy */}
+      {/* Stats Section */}
       <section className={styles.statsSection}>
         <div className="container">
           <div className={styles.statsGrid}>
@@ -343,7 +431,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section - Deep Indigo */}
+      {/* Testimonials Section */}
       <section className={styles.testimonials}>
         <div className="container">
           <div className={styles.sectionHeader}>
@@ -393,7 +481,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section - Vibrant Gradient */}
+      {/* CTA Section */}
       <section className={styles.ctaSection}>
         <div className="container">
           <div className={styles.ctaContent}>

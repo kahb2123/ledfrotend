@@ -47,10 +47,8 @@ const ProtectedRoute = ({ children, allowedRoles = ['customer', 'staff', 'admin'
         }
         
         const data = await response.json()
-        console.log('User role from API:', data.role)
         setUserRole(data.role)
-      } catch (error) {
-        console.error('Error fetching user role:', error)
+      } catch {
         setUserRole(null)
       } finally {
         setLoading(false)
@@ -72,7 +70,6 @@ const ProtectedRoute = ({ children, allowedRoles = ['customer', 'staff', 'admin'
 
   // Check role permissions
   if (!allowedRoles.includes(userRole)) {
-    console.log('Access denied. User role:', userRole, 'Allowed roles:', allowedRoles)
     return (
       <div className="unauthorized">
         <h2>Access Denied</h2>

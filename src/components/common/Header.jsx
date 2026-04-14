@@ -27,10 +27,9 @@ const Header = () => {
             }
           })
           const data = await response.json()
-          console.log('User role from API:', data.role)
-          setUserRole(data.role)
-        } catch (error) {
-          console.error('Error fetching user role:', error)
+                    setUserRole(data.role)
+        } catch {
+          // ignore auth errors
         }
       }
     }

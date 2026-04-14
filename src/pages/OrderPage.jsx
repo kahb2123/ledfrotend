@@ -489,7 +489,7 @@ const handleSubmit = async (e) => {
                       </div>
                       <div className={styles.serviceInfo}>
                         <h3>{service.type}</h3>
-                        <p className={styles.serviceName}>{service.name?.en || service.name}</p>
+                        <p className={styles.serviceName}>{typeof service.name === 'string' ? service.name : (service.name?.en || service.type)}</p>
                         <p className={styles.servicePrice}>
                           {service.pricePerDay?.toLocaleString() || 0} ETB/m²/day
                         </p>
