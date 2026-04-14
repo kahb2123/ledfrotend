@@ -351,7 +351,7 @@ const HomePage = () => {
                     </div>
                     <ul className={styles.ledFeatures}>
                       {(led.features || []).slice(0, 3).map((feature, idx) => (
-                        <li key={idx}>{typeof feature === 'string' ? feature : (feature.en || feature)}</li>
+                        <li key={idx}>{typeof feature === 'string' ? feature : (feature?.en || feature?.am || '')}</li>
                       ))}
                     </ul>
                     <div className={styles.ledPrice}>
@@ -388,10 +388,10 @@ const HomePage = () => {
               {displayInstallations.map((installation, index) => (
                 <div key={installation._id || index} className={styles.installationCard}>
                   <div className={styles.installationImage}>
-                    <img src={installation.url} alt={installation.title?.en || installation.title || 'Installation'} />
+                    <img src={installation.url} alt={typeof installation.title === 'string' ? installation.title : (installation.title?.en || 'Installation')} />
                     <div className={styles.installationOverlay}>
                       <div className={styles.installationDetails}>
-                        <h4>{installation.title?.en || installation.title || 'LED Installation'}</h4>
+                        <h4>{typeof installation.title === 'string' ? installation.title : (installation.title?.en || 'LED Installation')}</h4>
                         <p><FaMapMarkerAlt /> {getMetadata(installation, 'location') || installation.description?.en || ''}</p>
                         <p><FaCalendar /> {formatInstallationDate(installation.createdAt)}</p>
                         <div className={styles.installationSpecs}>
