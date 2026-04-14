@@ -27,6 +27,14 @@ const AdminDashboardPage = () => {
   const [showModal, setShowModal] = useState(false)
   const [modalType, setModalType] = useState('')
   
+  // Media state
+  const [mediaItems, setMediaItems] = useState([])
+  const [mediaLoading, setMediaLoading] = useState(false)
+  const [imageUploading, setImageUploading] = useState(false)
+  const [videoUploading, setVideoUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [editFormData, setEditFormData] = useState({})
+
   // Task creation state
   const [pendingOrders, setPendingOrders] = useState([])
   const [taskFormData, setTaskFormData] = useState({
@@ -44,7 +52,7 @@ const AdminDashboardPage = () => {
   })
 
   useEffect(() => {
-    if (activeTab !== 'settings' && activeTab !== 'videos' && activeTab !== 'services') {
+    if (activeTab !== 'settings' && activeTab !== 'videos' && activeTab !== 'services' && activeTab !== 'media') {
       fetchDashboardData()
     }
     if (activeTab === 'staff') {
@@ -52,6 +60,9 @@ const AdminDashboardPage = () => {
     }
     if (activeTab === 'tasks') {
       fetchPendingOrders()
+    }
+    if (activeTab === 'media') {
+      fetchMediaItems()
     }
   }, [activeTab])
 
@@ -83,12 +94,9 @@ const AdminDashboardPage = () => {
       // Handle orders data
       if (Array.isArray(ordersData)) {
         setOrders(ordersData)
-        console.log('Orders loaded (array):', ordersData.length)
       } else if (ordersData?.orders && Array.isArray(ordersData.orders)) {
         setOrders(ordersData.orders)
-        console.log('Orders loaded (object):', ordersData.orders.length)
       } else {
-        console.log('No orders found, setting empty array')
         setOrders([])
       }
 
@@ -121,94 +129,50 @@ const AdminDashboardPage = () => {
   }
 
   const fetchPendingOrders = async () => {
-  try {
-    console.log('🔍 Fetching pending orders...');
-    
-    // First, fetch all orders to see what we have
-    const allOrdersResponse = await api.getAllOrders();
-    console.log('📦 All orders response:', allOrdersResponse);
-    
-    let allOrders = [];
-    if (Array.isArray(allOrdersResponse)) {
-      allOrders = allOrdersResponse;
-    } else if (allOrdersResponse?.orders) {
-      allOrders = allOrdersResponse.orders;
+    try {
+      const allOrdersResponse = await api.getAllOrders();
+      let allOrders = [];
+      if (Array.isArray(allOrdersResponse)) {
+        allOrders = allOrdersResponse;
+      } else if (allOrdersResponse?.orders) {
+        allOrders = allOrdersResponse.orders;
+      }
+
+      const pending = allOrders.filter(order => {
+        const isPending = order.status === 'pending' || order.status === 'confirmed';
+        const hasNoStaff = !order.assignedStaff || order.assignedStaff.length === 0;
+        return isPending && hasNoStaff;
+      });
+
+      setPendingOrders(pending);
+    } catch {
+      // silently handle error
     }
-    
-    console.log('All orders count:', allOrders.length);
-    console.log('All orders statuses:', allOrders.map(o => ({ 
-      orderNumber: o.orderNumber, 
-      status: o.status,
-      hasAssignedStaff: o.assignedStaff?.length > 0
-    })));
-    
-    // Filter orders that are pending AND have no assigned staff
-    const pendingOrders = allOrders.filter(order => {
-      // Check if order status is pending
-      const isPending = order.status === 'pending' || order.status === 'confirmed';
-      // Check if no staff assigned yet
-      const hasNoStaff = !order.assignedStaff || order.assignedStaff.length === 0;
-      return isPending && hasNoStaff;
-    });
-    
-    console.log('✅ Pending orders found:', pendingOrders.length);
-    console.log('Pending orders:', pendingOrders.map(o => o.orderNumber));
-    
-    setPendingOrders(pendingOrders);
-    
-  } catch (error) {
-    console.error('❌ Error fetching pending orders:', error);
   }
-}
 
   const fetchStaff = async () => {
     try {
-      console.log('🔍 Fetching staff...');
-      
       let allUsers = [];
-      
+
       try {
         const response = await api.getAllUsers();
-        console.log('📦 getAllUsers response:', response);
-        
         if (Array.isArray(response)) {
           allUsers = response;
         } else if (response?.users && Array.isArray(response.users)) {
           allUsers = response.users;
         } else if (response?.data?.users && Array.isArray(response.data.users)) {
           allUsers = response.data.users;
-        } else {
-          console.log('Unexpected format, trying alternative method...');
-          const altResponse = await api.get('/users?role=staff');
-          if (Array.isArray(altResponse)) {
-            allUsers = altResponse;
-          } else if (altResponse?.users) {
-            allUsers = altResponse.users;
-          }
         }
-      } catch (error) {
-        console.error('Error with getAllUsers:', error);
-        const fallbackResponse = await api.get('/users');
-        if (Array.isArray(fallbackResponse)) {
-          allUsers = fallbackResponse;
-        } else if (fallbackResponse?.users) {
-          allUsers = fallbackResponse.users;
-        }
+      } catch {
+        // silently handle error
       }
-      
-      console.log('📋 All users:', allUsers);
-      
+
       const staffMembers = allUsers.filter(user => 
         user.role === 'staff' || user.role === 'admin'
       );
-      
-      console.log('✅ Staff members found:', staffMembers.length);
-      console.log('Staff list:', staffMembers);
-      
+
       setStaff(staffMembers);
-      
-    } catch (error) {
-      console.error('❌ Error in fetchStaff:', error);
+    } catch {
       setStaff([]);
     }
   }
@@ -238,18 +202,169 @@ const AdminDashboardPage = () => {
     }
   }
 
-  const handleAction = (action, item, type) => {
-    console.log(`Action: ${action}`, item, type)
+  const handleAction = async (action, item, type) => {
     if (action === 'edit') {
-      // Handle edit
+      setSelectedItem(item)
+      setModalType('edit' + type.charAt(0).toUpperCase() + type.slice(1))
+      setShowModal(true)
     } else if (action === 'delete') {
       if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-        // Handle delete
+        try {
+          if (type === 'staff' || type === 'user') {
+            await api.deleteStaff(item._id)
+            alert('User deleted successfully!')
+            fetchStaff()
+            fetchDashboardData()
+          } else if (type === 'order') {
+            await api.adminCancelOrder(item._id, 'Deleted by admin')
+            alert('Order cancelled successfully!')
+            fetchDashboardData()
+          } else if (type === 'media') {
+            await api.deleteMedia(item._id)
+            alert('Media deleted successfully!')
+            fetchMediaItems()
+          }
+        } catch (error) {
+          alert(error.response?.data?.error || `Failed to delete ${type}`)
+        }
       }
     } else if (action === 'view') {
       setSelectedItem(item)
       setModalType(type)
       setShowModal(true)
+    }
+  }
+
+  const fetchMediaItems = async () => {
+    try {
+      setMediaLoading(true)
+      const data = await api.getMedia()
+      if (data?.media && Array.isArray(data.media)) {
+        setMediaItems(data.media)
+      } else if (Array.isArray(data)) {
+        setMediaItems(data)
+      } else {
+        setMediaItems([])
+      }
+    } catch {
+      setMediaItems([])
+    } finally {
+      setMediaLoading(false)
+    }
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB')
+      return
+    }
+    const category = prompt('Enter category (service, gallery, installation, event, testimonial):', 'gallery')
+    if (!category) return
+    const title = prompt('Enter image title:', file.name)
+    if (!title) return
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('category', category)
+    formData.append('title[en]', title)
+    formData.append('title[am]', title)
+    formData.append('description[en]', title)
+    formData.append('description[am]', title)
+    formData.append('isPublic', 'true')
+    setImageUploading(true)
+    try {
+      await api.uploadImage(formData)
+      alert('Image uploaded successfully!')
+      fetchMediaItems()
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to upload image')
+    } finally {
+      setImageUploading(false)
+    }
+  }
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!file.type.startsWith('video/')) {
+      alert('Please upload a video file')
+      return
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      alert('Video size must be less than 50MB')
+      return
+    }
+    const category = prompt('Enter category (hero-video, gallery, event, installation):', 'hero-video')
+    if (!category) return
+    const title = prompt('Enter video title:', file.name)
+    if (!title) return
+    const formData = new FormData()
+    formData.append('video', file)
+    formData.append('category', category)
+    formData.append('title[en]', title)
+    formData.append('title[am]', title)
+    formData.append('description[en]', title)
+    formData.append('description[am]', title)
+    formData.append('isPublic', 'true')
+    setVideoUploading(true)
+    setUploadProgress(0)
+    try {
+      await api.uploadVideo(formData, (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        setUploadProgress(percentCompleted)
+      })
+      alert('Video uploaded successfully!')
+      fetchMediaItems()
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to upload video')
+    } finally {
+      setVideoUploading(false)
+      setUploadProgress(0)
+    }
+  }
+
+  const handleEditStaff = (member) => {
+    setSelectedItem(member)
+    setEditFormData({
+      firstName: member.firstName || '',
+      lastName: member.lastName || '',
+      email: member.email || '',
+      phone: member.phone || '',
+      role: member.role || 'staff'
+    })
+    setModalType('editStaff')
+    setShowModal(true)
+  }
+
+  const handleUpdateStaff = async (e) => {
+    e.preventDefault()
+    try {
+      setLoading(true)
+      await api.updateStaff(selectedItem._id, editFormData)
+      alert('Staff updated successfully!')
+      setShowModal(false)
+      fetchStaff()
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to update staff')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteStaff = async (member) => {
+    if (window.confirm('Are you sure you want to delete this staff member?')) {
+      try {
+        await api.deleteStaff(member._id)
+        alert('Staff deleted successfully!')
+        fetchStaff()
+      } catch (error) {
+        alert(error.response?.data?.error || 'Failed to delete staff')
+      }
     }
   }
 
@@ -706,8 +821,8 @@ const AdminDashboardPage = () => {
                       </div>
                     </div>
                     <div className={styles.staffActions}>
-                      <button className={styles.actionBtn}><FaEdit /></button>
-                      <button className={`${styles.actionBtn} ${styles.deleteBtn}`}><FaTrash /></button>
+                      <button className={styles.actionBtn} onClick={() => handleEditStaff(member)}><FaEdit /></button>
+                      <button className={`${styles.actionBtn} ${styles.deleteBtn}`} onClick={() => handleDeleteStaff(member)}><FaTrash /></button>
                     </div>
                   </div>
                 ))
@@ -738,25 +853,46 @@ const AdminDashboardPage = () => {
             <div className={styles.tabHeader}>
               <h2>Media Library</h2>
               <div className={styles.uploadButtons}>
-                <button className="btn btn-primary">
-                  <FaImage /> Upload Images
-                </button>
-                <button className="btn btn-secondary">
-                  <FaVideo /> Upload Videos
-                </button>
+                <label className="btn btn-primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaImage /> {imageUploading ? 'Uploading...' : 'Upload Image'}
+                  <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} disabled={imageUploading} />
+                </label>
+                <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaVideo /> {videoUploading ? `Uploading ${uploadProgress}%` : 'Upload Video'}
+                  <input type="file" accept="video/*" onChange={handleVideoUpload} style={{ display: 'none' }} disabled={videoUploading} />
+                </label>
               </div>
             </div>
 
-            <div className={styles.mediaGrid}>
-              <div className={styles.mediaCard}>
-                <img src="https://via.placeholder.com/300" alt="Media" />
-                <div className={styles.mediaOverlay}>
-                  <button className={styles.mediaAction}><FaEye /></button>
-                  <button className={styles.mediaAction}><FaEdit /></button>
-                  <button className={styles.mediaAction}><FaTrash /></button>
-                </div>
+            {mediaLoading ? (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>Loading media...</div>
+            ) : (
+              <div className={styles.mediaGrid}>
+                {mediaItems.length > 0 ? (
+                  mediaItems.map(item => (
+                    <div key={item._id} className={styles.mediaCard}>
+                      {item.type === 'video' ? (
+                        <video src={item.url} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                      ) : (
+                        <img src={item.url || item.thumbnail} alt={item.title?.en || 'Media'} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+                      )}
+                      <div style={{ padding: '0.5rem', fontSize: '0.85rem' }}>
+                        <strong>{item.title?.en || 'Untitled'}</strong>
+                        <div style={{ color: '#888' }}>{item.category} | {item.type}</div>
+                      </div>
+                      <div className={styles.mediaOverlay}>
+                        <button className={styles.mediaAction} onClick={() => window.open(item.url, '_blank')}><FaEye /></button>
+                        <button className={styles.mediaAction} onClick={() => handleAction('delete', item, 'media')}><FaTrash /></button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2rem', gridColumn: '1 / -1' }}>
+                    No media found. Upload images or videos to get started.
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -773,9 +909,10 @@ const AdminDashboardPage = () => {
         <div className={styles.modal} onClick={() => setShowModal(false)}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <h2>
-              {modalType === 'order' ? 'Order Details' : 
-               modalType === 'createStaff' ? 'Add New Staff' : 
-               modalType === 'createTask' ? 'Create New Task' : 
+              {modalType === 'order' ? 'Order Details' :
+               modalType === 'createStaff' ? 'Add New Staff' :
+               modalType === 'editStaff' ? 'Edit Staff Member' :
+               modalType === 'createTask' ? 'Create New Task' :
                'Item Details'}
             </h2>
             <div className={styles.modalBody}>
@@ -912,6 +1049,20 @@ const AdminDashboardPage = () => {
                 </form>
               )}
               
+              {modalType === 'editStaff' && selectedItem && (
+                <form className={styles.staffForm} onSubmit={handleUpdateStaff}>
+                  <input type="text" value={editFormData.firstName} onChange={(e) => setEditFormData({...editFormData, firstName: e.target.value})} placeholder="First Name" required />
+                  <input type="text" value={editFormData.lastName} onChange={(e) => setEditFormData({...editFormData, lastName: e.target.value})} placeholder="Last Name" required />
+                  <input type="email" value={editFormData.email} onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} placeholder="Email" required />
+                  <input type="tel" value={editFormData.phone} onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})} placeholder="Phone" />
+                  <select value={editFormData.role} onChange={(e) => setEditFormData({...editFormData, role: e.target.value})} required>
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <button type="submit" className="btn btn-primary">Update Staff</button>
+                </form>
+              )}
+
               {modalType === 'order' && selectedItem && (
                 <pre>{JSON.stringify(selectedItem, null, 2)}</pre>
               )}
