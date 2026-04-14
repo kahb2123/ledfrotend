@@ -16,7 +16,6 @@ const TaskManager = () => {
   const [showModal, setShowModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   
-  // Task form data state - THIS WAS MISSING
   const [taskFormData, setTaskFormData] = useState({
     orderId: '',
     assignedTo: '',
@@ -38,7 +37,6 @@ const TaskManager = () => {
   const fetchData = async () => {
     try {
       setLoading(true)
-      console.log('🔍 Fetching task manager data...')
       
       const [ordersData, staffData, tasksData] = await Promise.all([
         api.getAllOrders({ status: 'pending' }).catch(err => {
@@ -58,16 +56,13 @@ const TaskManager = () => {
       // Handle orders data
       if (Array.isArray(ordersData)) {
         setOrders(ordersData)
-        console.log('✅ Orders loaded:', ordersData.length)
       } else if (ordersData?.orders) {
         setOrders(ordersData.orders)
-        console.log('✅ Orders loaded:', ordersData.orders.length)
       }
 
       // Handle staff data
       if (Array.isArray(staffData)) {
         setStaff(staffData)
-        console.log('✅ Staff loaded:', staffData.length)
       } else if (staffData?.data) {
         setStaff(staffData.data)
       }
@@ -75,21 +70,18 @@ const TaskManager = () => {
       // Handle tasks data
       if (Array.isArray(tasksData)) {
         setTasks(tasksData)
-        console.log('✅ Tasks loaded:', tasksData.length)
       } else if (tasksData?.tasks) {
         setTasks(tasksData.tasks)
-        console.log('✅ Tasks loaded:', tasksData.tasks.length)
       }
 
     } catch (error) {
-      console.error('❌ Error fetching data:', error)
+      console.error('Error fetching data:', error.message)
     } finally {
       setLoading(false)
     }
   }
 
   const handleCreateTask = (order) => {
-    console.log('Creating task for order:', order)
     setSelectedOrder(order)
     setTaskFormData({
       ...taskFormData,
@@ -105,7 +97,6 @@ const TaskManager = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    console.log('Changing field:', name, value)
     
     if (name.includes('.')) {
       const [parent, child] = name.split('.')
@@ -123,7 +114,6 @@ const TaskManager = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault()
-  console.log('Submitting task form with data:', JSON.stringify(taskFormData, null, 2))
   
   // Validate form
   if (!taskFormData.orderId) {
@@ -154,13 +144,9 @@ const TaskManager = () => {
     notes: taskFormData.notes || ''
   }
 
-  console.log('Submitting formatted data:', JSON.stringify(submitData, null, 2))
-
   try {
     setLoading(true)
-    const response = await api.createTask(submitData)
-    console.log('Task created:', response)
-    
+    await api.createTask(submitData)
     alert('Task created successfully!')
     setShowModal(false)
     setTaskFormData({
@@ -178,9 +164,6 @@ const TaskManager = () => {
     })
     fetchData()
   } catch (error) {
-    console.error('Error creating task:', error)
-    console.error('Error response:', error.response?.data)
-    
     // Show detailed error message
     let errorMessage = 'Failed to create task.\n'
     if (error.response?.data?.error === 'Validation error') {
@@ -189,7 +172,6 @@ const TaskManager = () => {
       Object.keys(details).forEach(key => {
         errorMessage += `\n- ${key}: ${details[key]}`
       })
-      console.log('Validation details:', details) // Add this log
     } else if (error.response?.data?.error) {
       errorMessage += error.response.data.error
     } else if (error.response?.data?.message) {

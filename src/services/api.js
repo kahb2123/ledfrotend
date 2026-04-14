@@ -150,6 +150,21 @@ export const uploadTaskPhotos = throttled(async (id, formData) => {
   return response.data
 })
 
+export const getTaskById = throttled(async (id) => {
+  const response = await api.get(`/tasks/${id}`)
+  return response.data
+})
+
+export const reportTaskIssue = throttled(async (id, data) => {
+  const response = await api.post(`/tasks/${id}/issues`, data)
+  return response.data
+})
+
+export const resolveTaskIssue = throttled(async (id, data) => {
+  const response = await api.put(`/tasks/${id}/issues/resolve`, data)
+  return response.data
+})
+
 // ==================== CONTACT API ====================
 export const submitContactForm = throttled(async (formData) => {
   const response = await api.post('/contact', formData)
@@ -284,6 +299,9 @@ export default {
   createTask,
   updateTaskStatus,
   uploadTaskPhotos,
+  getTaskById,
+  reportTaskIssue,
+  resolveTaskIssue,
   submitContactForm,
   getUserProfile,
   updateUserProfile,

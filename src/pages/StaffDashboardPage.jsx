@@ -21,6 +21,8 @@ const StaffDashboardPage = () => {
   const [showTaskDetails, setShowTaskDetails] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [activeFilter, setActiveFilter] = useState('all') // all, pending, in-progress, completed
+  const [showIssueForm, setShowIssueForm] = useState(false)
+  const [issueData, setIssueData] = useState({ description: '', severity: 'medium' })
 
   useEffect(() => {
     fetchTasks()
@@ -79,6 +81,25 @@ const StaffDashboardPage = () => {
       console.error('Error uploading photos:', error)
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleReportIssue = async (taskId) => {
+    if (!issueData.description.trim()) {
+      alert('Please describe the issue')
+      return
+    }
+    try {
+      await api.reportTaskIssue(taskId, issueData)
+      alert('Issue reported successfully')
+      setShowIssueForm(false)
+      setIssueData({ description: '', severity: 'medium' })
+      const updatedTask = await api.getTaskById(taskId)
+      setSelectedTask(updatedTask)
+      fetchTasks()
+    } catch (error) {
+      console.error('Error reporting issue:', error)
+      alert('Failed to report issue')
     }
   }
 
@@ -510,6 +531,67 @@ const StaffDashboardPage = () => {
                   />
                   <span className={styles.progressValue}>{selectedTask.progress || 0}%</span>
                 </div>
+              </div>
+
+              {/* Report Issue */}
+              <div className={styles.modalSection}>
+                <h3>Report Issue</h3>
+                {!showIssueForm ? (
+                  <button 
+                    className={styles.reportIssueBtn || styles.uploadBtn}
+                    onClick={() => setShowIssueForm(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}
+                  >
+                    <FaExclamationTriangle /> Report an Issue
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <textarea
+                      placeholder="Describe the issue..."
+                      value={issueData.description}
+                      onChange={(e) => setIssueData({ ...issueData, description: e.target.value })}
+                      rows="3"
+                      style={{ width: '100%', padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #ddd' }}
+                    />
+                    <select
+                      value={issueData.severity}
+                      onChange={(e) => setIssueData({ ...issueData, severity: e.target.value })}
+                      style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #ddd' }}
+                    >
+                      <option value="low">Low Severity</option>
+                      <option value="medium">Medium Severity</option>
+                      <option value="high">High Severity</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        onClick={() => handleReportIssue(selectedTask._id)}
+                        style={{ padding: '0.5rem 1rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}
+                      >
+                        Submit Issue
+                      </button>
+                      <button 
+                        onClick={() => { setShowIssueForm(false); setIssueData({ description: '', severity: 'medium' }) }}
+                        style={{ padding: '0.5rem 1rem', backgroundColor: '#6b7280', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {selectedTask.issues?.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <h4 style={{ marginBottom: '0.5rem' }}>Previous Issues</h4>
+                    {selectedTask.issues.map((issue, idx) => (
+                      <div key={idx} style={{ padding: '0.5rem', backgroundColor: issue.status === 'resolved' ? '#f0fdf4' : '#fef2f2', borderRadius: '0.5rem', marginBottom: '0.5rem' }}>
+                        <p style={{ margin: 0, fontSize: '0.9rem' }}>{issue.description}</p>
+                        <small style={{ color: '#666' }}>
+                          Severity: {issue.severity} | Status: {issue.status}
+                        </small>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Photo Upload */}

@@ -432,6 +432,7 @@ const AdminDashboardPage = () => {
       lastName: formData.get('lastName'),
       email: formData.get('email'),
       phone: formData.get('phone'),
+      password: formData.get('password'),
       role: formData.get('role')
     }
     
@@ -922,6 +923,10 @@ const AdminDashboardPage = () => {
                   <input type="text" name="lastName" placeholder="Last Name" required />
                   <input type="email" name="email" placeholder="Email" required />
                   <input type="tel" name="phone" placeholder="Phone" />
+                  <input type="password" name="password" placeholder="Login Password (min 8 characters)" required minLength={8} />
+                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '-0.5rem 0 0.5rem' }}>
+                    Share this password with the staff member so they can log in.
+                  </p>
                   <select name="role" required>
                     <option value="">Select Role</option>
                     <option value="staff">Staff</option>
