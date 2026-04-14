@@ -160,8 +160,8 @@ const ServicesPage = () => {
                   </div>
                   
                   <div className={styles.serviceContent}>
-                    <h3 className={styles.serviceName}>{service.name.en}</h3>
-                    <p className={styles.serviceDescription}>{service.description.en}</p>
+                    <h3 className={styles.serviceName}>{typeof service.name === 'string' ? service.name : (service.name?.en || service.type)}</h3>
+                    <p className={styles.serviceDescription}>{typeof service.description === 'string' ? service.description : (service.description?.en || '')}</p>
                     
                     <div className={styles.priceSection}>
                       <span className={styles.priceLabel}>Price per day:</span>
@@ -181,7 +181,7 @@ const ServicesPage = () => {
                       {service.features?.slice(0, 3).map((feature, index) => (
                         <div key={index} className={styles.feature}>
                           <FaCheck className={styles.featureIcon} />
-                          <span>{feature.en}</span>
+                          <span>{typeof feature === 'string' ? feature : (feature?.en || '')}</span>
                         </div>
                       ))}
                       {service.features?.length > 3 && (
@@ -271,13 +271,13 @@ const ServicesPage = () => {
               {/* Service Details */}
               <div className={styles.detailsInfo}>
                 <div className={styles.detailsHeader}>
-                  <h2>{selectedService.type} - {selectedService.name.en}</h2>
+                  <h2>{selectedService.type} - {typeof selectedService.name === 'string' ? selectedService.name : (selectedService.name?.en || '')}</h2>
                   <span className={`${styles.categoryBadge} ${styles[selectedService.category]}`}>
                     {selectedService.category}
                   </span>
                 </div>
 
-                <p className={styles.detailsDescription}>{selectedService.description.en}</p>
+                <p className={styles.detailsDescription}>{typeof selectedService.description === 'string' ? selectedService.description : (selectedService.description?.en || '')}</p>
 
                 <div className={styles.detailsPrice}>
                   <span className={styles.priceLabel}>Price per m²/day:</span>
@@ -332,7 +332,7 @@ const ServicesPage = () => {
                     {selectedService.features?.map((feature, idx) => (
                       <div key={idx} className={styles.featureItem}>
                         <FaCheck className={styles.featureIcon} />
-                        <span>{feature.en}</span>
+                        <span>{typeof feature === 'string' ? feature : (feature?.en || '')}</span>
                       </div>
                     ))}
                   </div>
@@ -343,7 +343,7 @@ const ServicesPage = () => {
                     <h3>Applications</h3>
                     <div className={styles.applicationsList}>
                       {selectedService.applications.map((app, idx) => (
-                        <span key={idx} className={styles.applicationTag}>{app.en}</span>
+                        <span key={idx} className={styles.applicationTag}>{typeof app === 'string' ? app : (app?.en || '')}</span>
                       ))}
                     </div>
                   </div>
@@ -392,7 +392,7 @@ const ServicesPage = () => {
                 >
                   {services.map(service => (
                     <option key={service.type} value={service.type}>
-                      {service.type} - {service.name.en}
+                      {service.type} - {typeof service.name === 'string' ? service.name : (service.name?.en || service.type)}
                     </option>
                   ))}
                 </select>
