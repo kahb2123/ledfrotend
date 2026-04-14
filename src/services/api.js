@@ -189,7 +189,7 @@ export const updateStaff = throttled(async (id, data) => {
 })
 
 export const deleteStaff = throttled(async (id) => {
-  const response = await api.delete(`/services/${id}`)
+  const response = await api.delete(`/users/${id}`)
   return response.data
 })
 
